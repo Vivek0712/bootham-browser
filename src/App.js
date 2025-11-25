@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import TabsBar from './components/TabsBar';
 import Toolbar from './components/Toolbar';
 import WebviewContainer from './components/WebviewContainer';
+import Sidebar from './components/Sidebar';
 import './App.css';
 
 const LANDING_URL = 'about:blank';
@@ -10,6 +11,7 @@ function App() {
   const [tabs, setTabs] = useState([]);
   const [activeTabId, setActiveTabId] = useState(null);
   const [nextTabId, setNextTabId] = useState(1);
+  const [agentMode, setAgentMode] = useState(false);
 
   useEffect(() => {
     // Create initial tab
@@ -69,6 +71,10 @@ function App() {
     );
   };
 
+  const toggleAgentMode = () => {
+    setAgentMode(!agentMode);
+  };
+
   return (
     <div className="app">
       <TabsBar
@@ -82,13 +88,18 @@ function App() {
         tabs={tabs}
         activeTabId={activeTabId}
         onNavigate={updateTabUrl}
+        agentMode={agentMode}
+        onToggleAgent={toggleAgentMode}
       />
-      <WebviewContainer
-        tabs={tabs}
-        activeTabId={activeTabId}
-        onTitleUpdate={updateTabTitle}
-        onUrlUpdate={updateTabUrl}
-      />
+      <div className="main-content">
+        <WebviewContainer
+          tabs={tabs}
+          activeTabId={activeTabId}
+          onTitleUpdate={updateTabTitle}
+          onUrlUpdate={updateTabUrl}
+        />
+        <Sidebar isOpen={agentMode} />
+      </div>
     </div>
   );
 }

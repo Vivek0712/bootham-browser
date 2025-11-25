@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Toolbar.css';
 
-function Toolbar({ tabs, activeTabId, onNavigate }) {
+function Toolbar({ tabs, activeTabId, onNavigate, agentMode, onToggleAgent }) {
   const [urlInput, setUrlInput] = useState('');
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
@@ -93,6 +93,13 @@ function Toolbar({ tabs, activeTabId, onNavigate }) {
         onChange={(e) => setUrlInput(e.target.value)}
         onKeyPress={handleKeyPress}
       />
+      <button 
+        className={`agent-toggle-btn ${agentMode ? 'active' : ''}`}
+        onClick={onToggleAgent}
+        title="Toggle Pei Agent Mode"
+      >
+        🤖 Pei Agent
+      </button>
     </div>
   );
 }
