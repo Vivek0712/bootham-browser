@@ -1,24 +1,30 @@
+.tabs-bar-wrapper {
+  height: 36px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.tabs-bar-wavy-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.tabs-bar-wavy-content {
+  width: 100%;
+  height: 100%;
+}
+
 .tabs-bar {
   display: flex;
   align-items: center;
-  background: linear-gradient(to right, #1a0a2e, #2d1b4e, #1a0a2e);
-  background-size: 200% 100%;
   border-bottom: 1px solid rgba(168, 85, 247, 0.3);
-  height: 36px;
-  flex-shrink: 0;
+  height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   position: relative;
-  animation: waveMove 8s ease-in-out infinite;
-}
-
-@keyframes waveMove {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+  z-index: 10;
 }
 
 .tabs-container {
