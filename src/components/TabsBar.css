@@ -1,0 +1,103 @@
+.tabs-bar {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(to right, #1a0a2e, #2d1b4e, #1a0a2e);
+  background-size: 200% 100%;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+  height: 36px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+  animation: waveMove 8s ease-in-out infinite;
+}
+
+@keyframes waveMove {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.tabs-container {
+  display: flex;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(168, 85, 247, 0.2);
+  cursor: pointer;
+  min-width: 150px;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.tab.active {
+  background: rgba(168, 85, 247, 0.3);
+  color: white;
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+}
+
+.tab:hover {
+  background: rgba(168, 85, 247, 0.2);
+  color: white;
+}
+
+.tab.active:hover {
+  background: rgba(168, 85, 247, 0.35);
+}
+
+.tab-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-close {
+  padding: 0 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.tab-close:hover {
+  color: #fca5a5;
+}
+
+.new-tab-btn {
+  padding: 6px 12px;
+  border: none;
+  background: linear-gradient(to bottom right, #fca5a5, #c084fc);
+  cursor: pointer;
+  font-size: 18px;
+  flex-shrink: 0;
+  color: white;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+  margin: 0 4px;
+}
+
+.new-tab-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.5);
+}

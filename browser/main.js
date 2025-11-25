@@ -22,8 +22,8 @@ function createWindow() {
     }
   });
 
-  // Load the browser UI (Requirements: 2.1, 3.1, 3.2, 3.5, 6.1)
-  mainWindow.loadFile(path.join(__dirname, 'browser.html'));
+  // Load the React app (Requirements: 2.1, 3.1, 3.2, 3.5, 6.1)
+  mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
 
   // Handle window closed event
   mainWindow.on('closed', () => {
