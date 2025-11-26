@@ -177,17 +177,20 @@ async def ask_user(question: str) -> Dict[str, Any]:
     }
 
 
-# Create the web automation agent
+# Create the web automation agent with vision capabilities
 web_agent = Agent(
     name="WebAutomationAgent",
     model="bedrock.us.anthropic.claude-3-7-sonnet-20250219-v1:0",
     system_prompt="""You are a web navigation assistant with vision capabilities. 
 When you don't know something DO NOT stop or make assumptions, ASK the user for feedback so we can continue. 
 When you see a screenshot, analyze it carefully to identify elements and their positions. 
+Describe what you see in the screenshot including buttons, forms, text, images, and their approximate locations.
+Use the click tool with coordinates based on what you see in the screenshot.
 First click on elements like form fields, then use the type tool to enter text. 
 You can submit forms by setting submit=true when typing.
 You can scroll up or down to see more content on the page. 
-Think step by step and take screenshot between each to ensure you are doing what you think you are doing.""",
+Think step by step and take screenshot between each action to ensure you are doing what you think you are doing.
+When analyzing screenshots, provide detailed descriptions of the page layout and elements.""",
     tools=[
         navigate,
         screenshot,

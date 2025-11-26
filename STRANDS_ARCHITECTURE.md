@@ -186,6 +186,62 @@ npm start
 9. Response displayed in sidebar
 ```
 
+## Vision Capabilities (Multi-Modal)
+
+The agent has vision capabilities through Claude 3.7 Sonnet's multi-modal support:
+
+### Screenshot Analysis Flow
+
+```
+1. Agent calls screenshot() tool
+   ↓
+2. Browser captures page as PNG
+   ↓
+3. Image encoded as base64
+   ↓
+4. Image sent to agent with context
+   ↓
+5. Agent analyzes image using vision
+   ↓
+6. Agent identifies elements and positions
+   ↓
+7. Agent makes decisions based on visual info
+   ↓
+8. Agent calls appropriate tools (click, type, etc.)
+```
+
+### Example Interaction
+
+**User**: "Click the search button"
+
+**Agent Flow**:
+1. Calls `screenshot()` to see the page
+2. Receives base64-encoded image
+3. Analyzes image: "I see a search button at coordinates (520, 180)"
+4. Calls `click(520, 180)`
+5. Confirms action completed
+
+### Image Payload Format
+
+```javascript
+{
+  "prompt": "Analyze this screenshot",
+  "media": {
+    "type": "image",
+    "format": "png",
+    "data": "<base64-encoded-image>"
+  }
+}
+```
+
+### Benefits
+
+- **Visual Understanding**: Agent can see the page layout
+- **Accurate Clicking**: Identifies exact element positions
+- **Form Detection**: Recognizes input fields and buttons
+- **Error Detection**: Can see error messages and alerts
+- **Verification**: Confirms actions by viewing results
+
 ## Configuration
 
 ### Environment Variables
