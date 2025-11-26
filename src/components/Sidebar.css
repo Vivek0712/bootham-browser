@@ -1,11 +1,11 @@
 .sidebar {
   position: relative;
-  background: #0a0a0a;
-  border-left: 2px solid rgba(236, 72, 153, 0.5);
+  background: #0a1628;
+  border-left: 2px solid rgba(6, 182, 212, 0.5);
   transition: width 0.3s ease;
   overflow: hidden;
   flex-shrink: 0;
-  box-shadow: -5px 0 20px rgba(236, 72, 153, 0.2);
+  box-shadow: -5px 0 20px rgba(6, 182, 212, 0.3);
 }
 
 .sidebar.open {
@@ -49,8 +49,8 @@
   position: absolute;
   inset: 0;
   background-image: 
-    linear-gradient(rgba(236, 72, 153, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(236, 72, 153, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(6, 182, 212, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.04) 1px, transparent 1px);
   background-size: 50px 50px;
   pointer-events: none;
   z-index: 1;
@@ -75,14 +75,14 @@
   text-align: center;
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(236, 72, 153, 0.2);
+  border-bottom: 1px solid rgba(6, 182, 212, 0.3);
 }
 
 .ghost-icon {
   font-size: 4rem;
   margin-bottom: 1rem;
   animation: float 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 20px rgba(236, 72, 153, 0.5));
+  filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.6));
 }
 
 @keyframes float {
@@ -99,17 +99,17 @@
   font-weight: 700;
   color: white;
   margin-bottom: 0.5rem;
-  background: linear-gradient(to right, #ec4899, #a855f7);
+  background: linear-gradient(to right, #06b6d4, #3b82f6);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 0 30px rgba(236, 72, 153, 0.5);
+  text-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
   letter-spacing: 0.05em;
 }
 
 .sidebar-subtitle {
   font-size: 0.875rem;
-  color: rgba(236, 72, 153, 0.8);
+  color: rgba(6, 182, 212, 0.9);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -124,8 +124,8 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
-  background: rgba(236, 72, 153, 0.1);
-  border: 1px solid rgba(236, 72, 153, 0.3);
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.3);
   border-radius: 0.5rem;
   margin-bottom: 1.5rem;
 }
@@ -134,8 +134,8 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #ec4899;
-  box-shadow: 0 0 10px #ec4899, 0 0 20px #ec4899;
+  background: #06b6d4;
+  box-shadow: 0 0 10px #06b6d4, 0 0 20px #06b6d4;
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
@@ -152,15 +152,15 @@
 
 .status-text {
   font-size: 0.875rem;
-  color: #ec4899;
+  color: #06b6d4;
   font-weight: 600;
 }
 
 .agent-info {
   padding: 1rem;
-  background: rgba(168, 85, 247, 0.05);
+  background: rgba(59, 130, 246, 0.08);
   border-radius: 0.5rem;
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.25);
 }
 
 .info-text {
@@ -175,9 +175,9 @@
   left: 0;
   right: 0;
   padding: 1rem 1.5rem;
-  background: linear-gradient(to top, rgba(26, 10, 46, 0.95), transparent);
+  background: linear-gradient(to top, rgba(10, 22, 40, 0.95), transparent);
   backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(236, 72, 153, 0.2);
+  border-top: 1px solid rgba(6, 182, 212, 0.3);
   z-index: 20;
 }
 
@@ -185,7 +185,7 @@
   width: 100%;
   padding: 0.75rem;
   background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(236, 72, 153, 0.3);
+  border: 1px solid rgba(6, 182, 212, 0.3);
   border-radius: 0.5rem;
   color: white;
   font-size: 0.875rem;
@@ -197,19 +197,19 @@
 }
 
 .agent-input::placeholder {
-  color: rgba(236, 72, 153, 0.5);
+  color: rgba(6, 182, 212, 0.5);
 }
 
 .agent-input:focus {
-  border-color: rgba(236, 72, 153, 0.6);
+  border-color: rgba(6, 182, 212, 0.6);
   background: rgba(0, 0, 0, 0.7);
-  box-shadow: 0 0 15px rgba(236, 72, 153, 0.3);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
 }
 
 .agent-send-btn {
   width: 100%;
   padding: 0.75rem;
-  background: linear-gradient(to right, #ec4899, #a855f7);
+  background: linear-gradient(to right, #06b6d4, #3b82f6);
   border: none;
   border-radius: 0.5rem;
   color: white;
@@ -221,14 +221,114 @@
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(236, 72, 153, 0.3);
+  box-shadow: 0 2px 10px rgba(6, 182, 212, 0.3);
 }
 
 .agent-send-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.5);
+  box-shadow: 0 4px 15px rgba(6, 182, 212, 0.5);
 }
 
 .agent-send-btn:active {
   transform: translateY(0);
+}
+
+.agent-stop-btn {
+  background: linear-gradient(to right, #ef4444, #dc2626) !important;
+}
+
+.agent-log {
+  flex: 1;
+  overflow-y: auto;
+  margin: 1rem 0;
+  max-height: calc(100vh - 500px);
+}
+
+.log-entry {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  word-wrap: break-word;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.log-content {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.log-system {
+  background: rgba(34, 197, 94, 0.1);
+  color: #86efac;
+  border-left: 3px solid #22c55e;
+}
+
+.log-assistant {
+  background: rgba(168, 85, 247, 0.1);
+  color: #e9d5ff;
+  border-left: 3px solid #a855f7;
+}
+
+.log-user {
+  background: rgba(6, 182, 212, 0.1);
+  color: #67e8f9;
+  border-left: 3px solid #06b6d4;
+}
+
+.log-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  border-left: 3px solid #ef4444;
+}
+
+.user-question {
+  background: rgba(6, 182, 212, 0.15);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(6, 182, 212, 0.4);
+}
+
+.user-question-text {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #67e8f9;
+  font-size: 14px;
+}
+
+.user-question input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 13px;
+  outline: none;
+  margin-bottom: 8px;
+}
+
+.user-question input:focus {
+  border-color: #06b6d4;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+}
+
+.user-question button {
+  width: 100%;
+  padding: 8px;
+  background: linear-gradient(to right, #06b6d4, #3b82f6);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.user-question button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(6, 182, 212, 0.5);
 }

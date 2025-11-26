@@ -73,7 +73,8 @@ function WebviewContainer({ tabs, activeTabId, onTitleUpdate, onUrlUpdate }) {
   };
 
   const isLandingPage = (url) => {
-    return !url || url === 'about:blank' || url.includes('landing.html');
+    // Only show landing page for truly empty URLs
+    return !url || url === 'about:blank';
   };
 
   return (
@@ -89,6 +90,7 @@ function WebviewContainer({ tabs, activeTabId, onTitleUpdate, onUrlUpdate }) {
             <webview
               id={`webview-${tab.id}`}
               src={tab.url}
+              partition="persist:agent"
             />
           )}
         </div>

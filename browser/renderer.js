@@ -7,12 +7,27 @@ const forwardBtn = document.getElementById('forward-btn');
 const reloadBtn = document.getElementById('reload-btn');
 const newTabBtn = document.getElementById('new-tab-btn');
 const tabsContainer = document.getElementById('tabs-container');
-const webviewContainer = document.getElementById('webview-container');
+const webviewContainer = document.getElementById('webview-area');
+
+// Agent mode elements
+const agentToggle = document.getElementById('agent-toggle');
+const agentPanel = document.getElementById('agent-panel');
+const agentClose = document.getElementById('agent-close');
+const agentPrompt = document.getElementById('agent-prompt');
+const agentSubmit = document.getElementById('agent-submit');
+const agentStop = document.getElementById('agent-stop');
+const agentLog = document.getElementById('agent-log');
 
 // Tab management
 let tabs = [];
 let activeTabId = null;
 let nextTabId = 1;
+
+// Agent mode state
+let agentInitialized = false;
+let agentRunning = false;
+let agentTabId = null;
+let currentUserQuestionResolve = null;
 
 // Landing page URL
 const LANDING_URL = window.location.href.replace('browser.html', 'landing.html');
@@ -258,8 +273,9 @@ function updateNavigationButtons() {
  * Electron webview requires explicit pixel dimensions
  */
 function resizeWebview(webview) {
-  const width = webviewContainer.clientWidth;
-  const height = webviewContainer.clientHeight;
+  const container = document.getElementById('webview-area');
+  const width = container.clientWidth;
+  const height = container.clientHeight;
   
   webview.style.width = width + 'px';
   webview.style.height = height + 'px';
@@ -324,3 +340,280 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Resize webviews when window resizes
 window.addEventListener('resize', resizeAllWebviews);
+
+// Agent Mode Functions
+
+/**
+ * Toggle agent panel visibility
+ */
+function toggleAgentPanel() {
+  const isHidden = agentPanel.classList.contains('hidden');
+  
+  if (isHidden) {
+    agentPanel.classList.remove('hidden');
+    agentToggle.textContent = '🤖 Hide Agent';
+    
+    // Initialize agent if not already done
+    if (!agentInitialized) {
+      initializeAgent();
+    }
+  } else {
+    agentPanel.classList.add('hidden');
+    agentToggle.textContent = '🤖 Agent Mode';
+  }
+}
+
+/**
+ * Initialize the agent service
+ */
+async function initializeAgent() {
+  try {
+    addAgentLog('Initializing agent service...', 'system');
+    
+    // Check if electron IPC is available
+    if (!window.electron || !window.electron.ipcRenderer) {
+      addAgentLog('Error: Electron IPC not available', 'error');
+      return;
+    }
+    
+    // Use IPC to initialize agent in main process
+    const result = await window.electron.ipcRenderer.invoke('agent:initialize', 'us-west-2');
+    
+    if (result && result.success) {
+      agentInitialized = true;
+      addAgentLog('Agent service initialized successfully', 'system');
+    } else {
+      addAgentLog(`Failed to initialize agent: ${result ? result.error : 'No response'}`, 'error');
+    }
+  } catch (error) {
+    addAgentLog(`Error initializing agent: ${error.message}`, 'error');
+  }
+}
+
+/**
+ * Execute agent prompt
+ */
+async function executeAgentPrompt() {
+  const prompt = agentPrompt.value.trim();
+  
+  if (!prompt) {
+    addAgentLog('Please enter a prompt', 'error');
+    return;
+  }
+  
+  if (!agentInitialized) {
+    addAgentLog('Agent not initialized. Initializing now...', 'system');
+    await initializeAgent();
+    if (!agentInitialized) {
+      addAgentLog('Failed to initialize agent. Cannot execute prompt.', 'error');
+      return;
+    }
+  }
+  
+  try {
+    agentRunning = true;
+    agentSubmit.style.display = 'none';
+    agentStop.style.display = 'block';
+    agentPrompt.disabled = true;
+    
+    addAgentLog(`User: ${prompt}`, 'user');
+    
+    // Create a new tab for agent actions
+    addAgentLog('Creating agent tab...', 'system');
+    agentTabId = createTab('about:blank');
+    
+    // Get the webview for the agent tab
+    const agentTabData = tabs.find(t => t.id === agentTabId);
+    if (!agentTabData) {
+      throw new Error('Failed to create agent tab');
+    }
+    
+    // Wait for webview to be fully attached and ready
+    addAgentLog('Waiting for agent tab to be ready...', 'system');
+    await new Promise((resolve, reject) => {
+      let resolved = false;
+      const timeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          reject(new Error('Timeout waiting for webview to be ready'));
+        }
+      }, 10000);
+      
+      const onReady = () => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          // Give it a bit more time to ensure it's fully ready
+          setTimeout(resolve, 1000);
+        }
+      };
+      
+      // Listen for dom-ready event
+      agentTabData.webview.addEventListener('dom-ready', onReady, { once: true });
+      
+      // Also check if it's already ready
+      setTimeout(() => {
+        try {
+          const id = agentTabData.webview.getWebContentsId();
+          if (id) {
+            onReady();
+          }
+        } catch (e) {
+          // Not ready yet, wait for event
+        }
+      }, 100);
+    });
+    
+    // Switch to the agent tab after it's ready
+    switchTab(agentTabId);
+    
+    const webContentsId = agentTabData.webview.getWebContentsId();
+    addAgentLog(`Agent tab ready (WebContents ID: ${webContentsId})`, 'system');
+    
+    // Execute the prompt
+    addAgentLog('Sending prompt to agent service...', 'system');
+    const result = await window.electron.ipcRenderer.invoke('agent:execute', prompt, webContentsId);
+    
+    if (result && !result.success) {
+      addAgentLog(`Error: ${result.error}`, 'error');
+    } else if (!result) {
+      addAgentLog('Error: No response from agent service', 'error');
+    }
+  } catch (error) {
+    addAgentLog(`Error executing prompt: ${error.message}`, 'error');
+    console.error('Agent execution error:', error);
+  } finally {
+    agentRunning = false;
+    agentSubmit.style.display = 'block';
+    agentStop.style.display = 'none';
+    agentPrompt.disabled = false;
+    agentPrompt.value = '';
+  }
+}
+
+/**
+ * Stop agent execution
+ */
+async function stopAgent() {
+  try {
+    await window.electron.ipcRenderer.invoke('agent:stop');
+    addAgentLog('Agent stopped by user', 'system');
+  } catch (error) {
+    addAgentLog(`Error stopping agent: ${error.message}`, 'error');
+  }
+}
+
+/**
+ * Add log entry to agent panel
+ */
+function addAgentLog(message, type = 'system') {
+  const entry = document.createElement('div');
+  entry.className = `log-entry log-${type}`;
+  
+  // Format message if it's JSON
+  try {
+    const parsed = JSON.parse(message);
+    entry.textContent = JSON.stringify(parsed, null, 2);
+  } catch {
+    entry.textContent = message;
+  }
+  
+  agentLog.appendChild(entry);
+  agentLog.scrollTop = agentLog.scrollHeight;
+}
+
+/**
+ * Handle agent events from main process
+ */
+function handleAgentEvent(event, eventData) {
+  const { type, data } = eventData;
+  
+  switch (type) {
+    case 'agent-start':
+      addAgentLog(`Starting agent with prompt: ${data.prompt}`, 'system');
+      break;
+      
+    case 'agent-complete':
+      addAgentLog('Agent execution completed', 'system');
+      break;
+      
+    case 'agent-error':
+      addAgentLog(`Agent error: ${data.error}`, 'error');
+      break;
+      
+    case 'log':
+      addAgentLog(data.message, data.type);
+      break;
+      
+    case 'tool-execute':
+      addAgentLog(`Executing tool: ${data.tool} with params: ${JSON.stringify(data.params)}`, 'system');
+      break;
+      
+    case 'ask-user':
+      showUserQuestion(data.question);
+      break;
+  }
+}
+
+/**
+ * Show user question in agent panel
+ */
+function showUserQuestion(question) {
+  const questionDiv = document.createElement('div');
+  questionDiv.className = 'user-question';
+  
+  const questionText = document.createElement('div');
+  questionText.className = 'user-question-text';
+  questionText.textContent = `❓ ${question}`;
+  
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'Your answer...';
+  
+  const submitBtn = document.createElement('button');
+  submitBtn.textContent = 'Submit Answer';
+  submitBtn.onclick = async () => {
+    const answer = input.value.trim();
+    if (answer) {
+      // Send response to main process
+      await window.electron.ipcRenderer.invoke('agent:respond', answer);
+      questionDiv.remove();
+      addAgentLog(`User answered: ${answer}`, 'user');
+    }
+  };
+  
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      submitBtn.click();
+    }
+  });
+  
+  questionDiv.appendChild(questionText);
+  questionDiv.appendChild(input);
+  questionDiv.appendChild(submitBtn);
+  
+  agentLog.appendChild(questionDiv);
+  agentLog.scrollTop = agentLog.scrollHeight;
+  input.focus();
+}
+
+// Agent Mode Event Listeners
+
+agentToggle.addEventListener('click', toggleAgentPanel);
+agentClose.addEventListener('click', toggleAgentPanel);
+agentSubmit.addEventListener('click', executeAgentPrompt);
+agentStop.addEventListener('click', stopAgent);
+
+agentPrompt.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter' && e.ctrlKey) {
+    executeAgentPrompt();
+  }
+});
+
+// Listen for agent events from main process
+// Wait for DOM to be ready before setting up IPC listeners
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.electron && window.electron.ipcRenderer) {
+    window.electron.ipcRenderer.on('agent:event', handleAgentEvent);
+  }
+});
