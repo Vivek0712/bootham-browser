@@ -136,15 +136,21 @@ class AgentService {
     }
   }
 
-  async executeAgentCore(prompt) {
+  async executeAgentCore(prompt, media = null) {
     console.log('[Agent] Executing via AgentCore...');
     
     const { InvokeAgentRuntimeCommand } = require('@aws-sdk/client-bedrock-agentcore');
     
+    // Build payload with optional media
+    const payload = { prompt };
+    if (media) {
+      payload.media = media;
+    }
+    
     const command = new InvokeAgentRuntimeCommand({
       agentRuntimeArn: AGENT_RUNTIME_ARN,
       runtimeSessionId: this.sessionId,
-      payload: JSON.stringify({ prompt })
+      payload: JSON.stringify(payload)
     });
     
     const response = await this.agentClient.send(command);
@@ -157,15 +163,21 @@ class AgentService {
     await this.processAgentResponse(responseData);
   }
 
-  async executeLocalAgent(prompt) {
+  async executeLocalAgent(prompt, media = null) {
     console.log('[Agent] Executing via local agent...');
     
     const fetch = require('node-fetch');
     
+    // Build payload with optional media
+    const payload = { prompt };
+    if (media) {
+      payload.media = media;
+    }
+    
     const response = await fetch(`http://localhost:${AGENT_PORT}/invocations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify(payload)
     });
     
     if (!response.ok) {
@@ -230,9 +242,31 @@ class AgentService {
     // Execute the tool in the browser
     const result = await this.executeTool(toolName, toolInput);
     
-    // Send result back to agent (for local mode)
-    if (this.agentMode === 'local') {
-      // Tool results are handled by the agent automatically
+    // If screenshot, send image back to agent for analysis
+    if (toolName === 'screenshot' && result.image_data) {
+      this.emitEvent('log', { 
+        message: 'Screenshot captured, sending to agent for analysis...', 
+        type: 'system' 
+      });
+      
+      // Send screenshot to agent with context
+      const media = {
+        type: 'image',
+        format: result.format,
+        data: result.image_data
+      };
+      
+      const pageInfo = await this.getPageInfo();
+      const contextPrompt = `I took a screenshot of the current page. Page title: "${pageInfo.title}", URL: "${pageInfo.url}". Please analyze the screenshot and continue with the task.`;
+      
+      // Send to agent based on mode
+      if (this.agentMode === 'agentcore') {
+        await this.executeAgentCore(contextPrompt, media);
+      } else {
+        await this.executeLocalAgent(contextPrompt, media);
+      }
+    } else {
+      // Regular tool result logging
       this.emitEvent('log', { 
         message: `Tool ${toolName} executed: ${JSON.stringify(result)}`, 
         type: 'system' 
@@ -333,9 +367,17 @@ class AgentService {
     this.emitEvent('tool-execute', { tool: 'screenshot', params: { filename } });
     
     const image = await this.page.capturePage();
-    fs.writeFileSync(filename, image.toPNG());
+    const imageBuffer = image.toPNG();
+    fs.writeFileSync(filename, imageBuffer);
     
-    return { filename };
+    // Encode image as base64 for sending to agent
+    const imageBase64 = imageBuffer.toString('base64');
+    
+    return { 
+      filename,
+      image_data: imageBase64,
+      format: 'png'
+    };
   }
 
   async click(x, y) {

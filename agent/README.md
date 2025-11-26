@@ -72,7 +72,7 @@ See [AgentCore Deployment Guide](../AGENTCORE_DEPLOYMENT.md) for detailed instru
 
 ### Navigation Tools
 - `navigate(url)` - Navigate to a URL
-- `screenshot()` - Capture current page
+- `screenshot()` - Capture current page (automatically sends image to agent for analysis)
 
 ### Interaction Tools
 - `click(x, y)` - Click at coordinates
@@ -87,6 +87,31 @@ See [AgentCore Deployment Guide](../AGENTCORE_DEPLOYMENT.md) for detailed instru
 - `write_file(filename, content)` - Save data to file
 - `ask_user(question)` - Request user input
 
+## Multi-Modal Support
+
+The agent supports vision capabilities through screenshot analysis:
+
+1. When `screenshot()` tool is called, the image is captured
+2. Image is base64 encoded and sent to the agent
+3. Agent analyzes the screenshot using Claude's vision capabilities
+4. Agent can identify elements, buttons, forms, and their positions
+5. Agent uses this visual information to make decisions
+
+**Example Flow**:
+```
+User: "Click the login button"
+  ↓
+Agent: calls screenshot()
+  ↓
+Browser: captures page, encodes as base64
+  ↓
+Agent: receives image, analyzes it
+  ↓
+Agent: "I see a login button at coordinates (450, 300)"
+  ↓
+Agent: calls click(450, 300)
+```
+
 ## Integration with Electron App
 
 The Electron app communicates with this agent through the `agent-service.js` which:
@@ -95,6 +120,7 @@ The Electron app communicates with this agent through the `agent-service.js` whi
 2. Executes them in the browser webview
 3. Returns results back to the agent
 4. Handles streaming responses
+5. Sends screenshots as base64-encoded images for vision analysis
 
 ## Architecture
 
