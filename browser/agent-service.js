@@ -1,201 +1,42 @@
-// Agent service for Bedrock integration
-const { BedrockRuntimeClient, ConverseCommand } = require('@aws-sdk/client-bedrock-runtime');
+// Agent service for Strands Agent integration
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { spawn } = require('child_process');
 
 // Generate UUID v4 using crypto
 function uuidv4() {
   return crypto.randomUUID();
 }
 
-const modelId = "us.anthropic.claude-3-7-sonnet-20250219-v1:0";
+// Agent deployment mode: 'local' or 'agentcore'
+const AGENT_MODE = process.env.AGENT_MODE || 'local';
+const AGENT_RUNTIME_ARN = process.env.AGENT_RUNTIME_ARN;
+const AGENT_PORT = process.env.AGENT_PORT || 8080;
 
-const systemPrompt = `You are a web navigation assistant with vision capabilities. When you don't know something DO NOT stop or make assumptions, ASK the user for feedback so we can continue. When you see a screenshot, analyze it carefully to identify elements and their positions. First click on elements like form fields, then use the type tool to enter text. You can submit forms by setting submit=true when typing. You can scroll up or down to see more content on the page. Think step by step and take screenshot between each to ensure you are doing what you think you are doing.`;
-
-// Define web interaction tools
-const webTools = [
-  {
-    "toolSpec": {
-      "name": "navigate",
-      "description": "Navigate to a specified URL",
-      "inputSchema": {
-        "json": {
-          "type": "object",
-          "properties": {
-            "url": { "type": "string" }
-          },
-          "required": ["url"]
-        }
-      }
-    }
-  },
-  {
-    "toolSpec": {
-      "name": "screenshot",
-      "description": "Take a screenshot of the current page",
-      "inputSchema": {
-        "json": {
-          "type": "object",
-          "properties": {},
-          "required": []
-        }
-      }
-    }
-  },
-  {
-    "toolSpec": {
-      "name": "click",
-      "description": "Click at specific coordinates on the page",
-      "inputSchema": {
-        "json": {
-          "type": "object",
-          "properties": {
-            "x": {
-              "type": "number",
-              "description": "X coordinate for the click"
-            },
-            "y": {
-              "type": "number",
-              "description": "Y coordinate for the click"
-            }
-          },
-          "required": ["x", "y"]
-        }
-      }
-    }
-  },
-  {
-    "toolSpec": {
-      "name": "scroll",
-      "description": "Scroll the page up or down",
-      "inputSchema": {
-        "json": {
-          "type": "object",
-          "properties": {
-            "direction": {
-              "type": "string",
-              "description": "Direction to scroll: 'up' or 'down'"
-            },
-            "amount": {
-              "type": "number",
-              "description": "Amount to scroll in pixels (default: 500)"
-            }
-          },
-          "required": ["direction"]
-        }
-      }
-    }
-  },
-  {
-    "toolSpec": {
-      "name": "type",
-      "description": "Type text into the last clicked element, with option to submit",
-      "inputSchema": {
-        "json": {
-          "type": "object",
-          "properties": {
-            "text": {
-              "type": "string",
-              "description": "Text to type into the last clicked element"
-            },
-            "submit": {
-              "type": "boolean",
-              "description": "Whether to press Enter after typing (to submit forms)"
-            }
-          },
-          "required": ["text"]
-        }
-      }
-    }
-  },
-  {
-    "toolSpec": {
-      "name": "write_file",
-      "description": "Write content to a file",
-      "inputSchema": {
-        "json": {
-          "type": "object",
-          "properties": {
-            "filename": {
-              "type": "string",
-              "description": "Name of the file to write to"
-            },
-            "content": {
-              "type": "string",
-              "description": "Content to write to the file"
-            }
-          },
-          "required": ["filename", "content"]
-        }
-      }
-    }
-  },
-  {
-    "toolSpec": {
-      "name": "ask_user",
-      "description": "Ask the user a question and get their response. Always use this tool when you need user feedback",
-      "inputSchema": {
-        "json": {
-          "type": "object",
-          "properties": {
-            "question": {
-              "type": "string",
-              "description": "The question to ask the user"
-            }
-          },
-          "required": ["question"]
-        }
-      }
-    }
-  },
-  {
-    "toolSpec": {
-      "name": "get_selected_text",
-      "description": "Get the text that is currently selected on the page by the user",
-      "inputSchema": {
-        "json": {
-          "type": "object",
-          "properties": {},
-          "required": []
-        }
-      }
-    }
-  },
-  {
-    "toolSpec": {
-      "name": "get_page_content",
-      "description": "Get the visible text content from the current page",
-      "inputSchema": {
-        "json": {
-          "type": "object",
-          "properties": {
-            "selector": {
-              "type": "string",
-              "description": "Optional CSS selector to get content from specific element (e.g., 'article', 'main', '.content')"
-            }
-          },
-          "required": []
-        }
-      }
-    }
-  }
-];
+// Tool execution mapping - these execute in the browser webview
 
 class AgentService {
   constructor() {
-    this.bedrockClient = null;
     this.page = null;
     this.browser = null;
     this.sessionId = null;
-    this.messages = [];
     this.isRunning = false;
     this.eventCallback = null;
+    this.agentProcess = null;
+    this.agentMode = AGENT_MODE;
+    this.agentClient = null;
   }
 
   initialize(region = 'us-west-2') {
-    this.bedrockClient = new BedrockRuntimeClient({ region });
     this.sessionId = uuidv4();
+    
+    // Initialize based on deployment mode
+    if (this.agentMode === 'agentcore') {
+      this.initializeAgentCore(region);
+    } else {
+      this.initializeLocalAgent();
+    }
     
     // Create screenshots directory
     const screenshotsDir = path.join(process.cwd(), 'screenshots', this.sessionId);
@@ -225,20 +66,67 @@ class AgentService {
     this.page = browserContext;
   }
 
+  initializeAgentCore(region) {
+    console.log('[Agent] Initializing AgentCore client...');
+    
+    if (!AGENT_RUNTIME_ARN) {
+      throw new Error('AGENT_RUNTIME_ARN environment variable is required for AgentCore mode');
+    }
+    
+    const { BedrockAgentCoreClient } = require('@aws-sdk/client-bedrock-agentcore');
+    this.agentClient = new BedrockAgentCoreClient({ region });
+    
+    console.log('[Agent] AgentCore client initialized');
+  }
+
+  initializeLocalAgent() {
+    console.log('[Agent] Initializing local Strands agent...');
+    
+    // Start the local Python agent server
+    const agentPath = path.join(__dirname, '../agent/agentcore_app.py');
+    
+    this.agentProcess = spawn('python', [agentPath], {
+      env: { ...process.env, PORT: AGENT_PORT },
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    
+    this.agentProcess.stdout.on('data', (data) => {
+      console.log(`[Agent] ${data.toString()}`);
+    });
+    
+    this.agentProcess.stderr.on('data', (data) => {
+      console.error(`[Agent Error] ${data.toString()}`);
+    });
+    
+    this.agentProcess.on('close', (code) => {
+      console.log(`[Agent] Process exited with code ${code}`);
+    });
+    
+    // Wait for agent to be ready
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log('[Agent] Local agent server started');
+        resolve();
+      }, 3000);
+    });
+  }
+
   async executePrompt(prompt) {
     if (this.isRunning) {
       throw new Error('Agent is already running');
     }
 
     this.isRunning = true;
-    this.messages = [{
-      role: "user",
-      content: [{ text: prompt }]
-    }];
 
     try {
       this.emitEvent('agent-start', { prompt });
-      await this.runAgentLoop();
+      
+      if (this.agentMode === 'agentcore') {
+        await this.executeAgentCore(prompt);
+      } else {
+        await this.executeLocalAgent(prompt);
+      }
+      
       this.emitEvent('agent-complete', {});
     } catch (error) {
       this.emitEvent('agent-error', { error: error.message });
@@ -248,96 +136,124 @@ class AgentService {
     }
   }
 
-  async runAgentLoop() {
-    let requestCount = 1;
+  async executeAgentCore(prompt) {
+    console.log('[Agent] Executing via AgentCore...');
+    
+    const { InvokeAgentRuntimeCommand } = require('@aws-sdk/client-bedrock-agentcore');
+    
+    const command = new InvokeAgentRuntimeCommand({
+      agentRuntimeArn: AGENT_RUNTIME_ARN,
+      runtimeSessionId: this.sessionId,
+      payload: JSON.stringify({ prompt })
+    });
+    
+    const response = await this.agentClient.send(command);
+    
+    // Process streaming response
+    const responseBody = response.response.read();
+    const responseData = JSON.parse(responseBody);
+    
+    // Process agent actions from response
+    await this.processAgentResponse(responseData);
+  }
 
-    this.emitEvent('log', { message: `Sending request ${requestCount} to Bedrock...`, type: 'system' });
-
-    let response = await this.bedrockClient.send(new ConverseCommand({
-      modelId,
-      system: [{ text: systemPrompt }],
-      messages: this.messages,
-      toolConfig: { tools: webTools }
-    }));
-
-    let outputMessage = response.output.message;
-    let stopReason = response.stopReason;
-
-    this.emitEvent('log', { message: JSON.stringify(outputMessage, null, 2), type: 'assistant' });
-    this.messages.push(outputMessage);
-
-    while (stopReason === "tool_use") {
-      const toolContent = [];
-
-      for (const content of outputMessage.content) {
-        if (content.toolUse) {
-          const tool = content.toolUse;
-          const toolId = tool.toolUseId;
-          const toolInput = tool.input || {};
-
-          let result = await this.executeTool(tool.name, toolInput);
-          
-          if (tool.name === "screenshot") {
-            const filename = result.filename;
-            const imageBytes = fs.readFileSync(filename);
-            toolContent.push({
-              toolResult: {
-                toolUseId: toolId,
-                content: [
-                  { json: { filename } },
-                  { image: { format: "png", source: { bytes: imageBytes } } }
-                ]
-              }
-            });
-          } else if (tool.name === "ask_user") {
-            // Wait for user response via event
-            const response = await this.waitForUserResponse(toolInput.question);
-            result = { response };
-            toolContent.push({
-              toolResult: {
-                toolUseId: toolId,
-                content: [{ json: result }]
-              }
-            });
-          } else {
-            toolContent.push({
-              toolResult: {
-                toolUseId: toolId,
-                content: [{ json: result }]
-              }
-            });
+  async executeLocalAgent(prompt) {
+    console.log('[Agent] Executing via local agent...');
+    
+    const fetch = require('node-fetch');
+    
+    const response = await fetch(`http://localhost:${AGENT_PORT}/invocations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Agent request failed: ${response.statusText}`);
+    }
+    
+    // Process streaming response
+    const reader = response.body;
+    let buffer = '';
+    
+    for await (const chunk of reader) {
+      buffer += chunk.toString();
+      
+      // Try to parse complete JSON events
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // Keep incomplete line in buffer
+      
+      for (const line of lines) {
+        if (line.trim()) {
+          try {
+            const event = JSON.parse(line);
+            await this.processAgentEvent(event);
+          } catch (e) {
+            console.error('[Agent] Failed to parse event:', e);
           }
         }
       }
-
-      // Add browser context
-      const pageInfo = await this.getPageInfo();
-      toolContent.push({
-        text: `Current page: Title: '${pageInfo.title}', URL: '${pageInfo.url}'`
-      });
-
-      const toolResultMessage = {
-        role: "user",
-        content: toolContent
-      };
-
-      this.messages.push(toolResultMessage);
-      requestCount++;
-
-      this.emitEvent('log', { message: `Sending request ${requestCount} to Bedrock...`, type: 'system' });
-
-      response = await this.bedrockClient.send(new ConverseCommand({
-        modelId,
-        system: [{ text: systemPrompt }],
-        messages: this.messages,
-        toolConfig: { tools: webTools }
-      }));
-
-      outputMessage = response.output.message;
-      this.messages.push(outputMessage);
-      this.emitEvent('log', { message: JSON.stringify(outputMessage, null, 2), type: 'assistant' });
-      stopReason = response.stopReason;
     }
+  }
+
+  async processAgentEvent(event) {
+    console.log('[Agent] Processing event:', event.event);
+    
+    if (event.event === 'tool_use') {
+      const toolData = event.data;
+      await this.executeToolFromAgent(toolData);
+    } else if (event.event === 'message') {
+      this.emitEvent('log', { 
+        message: JSON.stringify(event.data, null, 2), 
+        type: 'assistant' 
+      });
+    }
+  }
+
+  async processAgentResponse(responseData) {
+    console.log('[Agent] Processing response:', responseData);
+    
+    if (responseData.output && responseData.output.message) {
+      this.emitEvent('log', { 
+        message: JSON.stringify(responseData.output.message, null, 2), 
+        type: 'assistant' 
+      });
+    }
+  }
+
+  async executeToolFromAgent(toolData) {
+    const toolName = toolData.name;
+    const toolInput = toolData.input || {};
+    
+    console.log(`[Agent] Executing tool from agent: ${toolName}`);
+    
+    // Execute the tool in the browser
+    const result = await this.executeTool(toolName, toolInput);
+    
+    // Send result back to agent (for local mode)
+    if (this.agentMode === 'local') {
+      // Tool results are handled by the agent automatically
+      this.emitEvent('log', { 
+        message: `Tool ${toolName} executed: ${JSON.stringify(result)}`, 
+        type: 'system' 
+      });
+    }
+    
+    return result;
+  }
+
+  stop() {
+    this.isRunning = false;
+    
+    // Stop local agent process if running
+    if (this.agentProcess) {
+      this.agentProcess.kill();
+      this.agentProcess = null;
+    }
+  }
+
+  cleanup() {
+    this.stop();
   }
 
   async executeTool(toolName, toolInput) {
@@ -552,9 +468,7 @@ class AgentService {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  stop() {
-    this.isRunning = false;
-  }
+
 }
 
 module.exports = AgentService;
