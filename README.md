@@ -10,7 +10,7 @@
 [![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock%20AgentCore-FF9900.svg)](https://aws.amazon.com/bedrock/)
 [![Strands Agents](https://img.shields.io/badge/Strands-Agents-00D9FF.svg)](https://github.com/strands-ai)
 
-**Website**: [boothambrowser.com](https://boothambrowser.com) | **Docs**: [.kiro/docs](./.kiro/docs/) | [Acquire this Platform?](mailto:vivek@boothambrowser.com) |  [Contact Me](mailto:vivekraja98@gmail.com) 
+**Website**: [boothambrowser.com](https://www.boothambrowser.com) | **Docs**: [.kiro/docs](./.kiro/docs/) | [Acquire this Platform?](mailto:vivek@boothambrowser.com) |  [Contact Me](mailto:vivekraja98@gmail.com) 
 
 ---
 
@@ -496,7 +496,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 ## 🔗 Links
 
-- **Website**: [boothambrowser.com](https://boothambrowser.com)
+- **Website**: [boothambrowser.com](https://www.boothambrowser.com)
 - **Documentation**: [.kiro/docs](./.kiro/docs/)
 - **GitHub**: [github.com/yourusername/bootham-browser](https://github.com/yourusername/bootham-browser)
 - **Issues**: [github.com/yourusername/bootham-browser/issues](https://github.com/yourusername/bootham-browser/issues)
