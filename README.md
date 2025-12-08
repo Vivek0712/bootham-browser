@@ -14,7 +14,7 @@
 
 ---
 
-### 🎃 Kiroween Hackathon 2024 - Frankenstein Category
+### 🎃 Kiroween Hackathon 2025 - Frankenstein Category
 
 <img src="https://img.shields.io/badge/🧟_Frankenstein_Score-10%2F10-ff6b6b?style=for-the-badge" alt="Frankenstein Score"/>
 <img src="https://img.shields.io/badge/👻_Spooky_Meter-EXTREMELY_HAUNTED-9b59b6?style=for-the-badge" alt="Spooky Meter"/>
@@ -51,7 +51,7 @@
 
 <div align="center">
 
-https://github.com/user-attachments/assets/bootham-demo.mov
+**🎥 [Watch the Demo on LinkedIn](https://www.linkedin.com/posts/meetvivekraja_%F0%9D%90%88-%F0%9D%90%9A%F0%9D%90%AC%F0%9D%90%A4%F0%9D%90%9E%F0%9D%90%9D-%F0%9D%90%A6%F0%9D%90%B2-%F0%9D%90%9A%F0%9D%90%A0%F0%9D%90%9E%F0%9D%90%A7%F0%9D%90%AD%F0%9D%90%A2%F0%9D%90%9C-%F0%9D%90%80%F0%9D%90%88-%F0%9D%90%9B-activity-7401685288600985602-yppq)**
 
 *Agent autonomously browsing, extracting data, and synthesizing answers*
 
@@ -62,8 +62,6 @@ https://github.com/user-attachments/assets/bootham-demo.mov
 
 **Agent mode**: You ask "Compare the top 5 project management tools for remote teams"
 - Agent autonomously visits sites → Extracts pricing, features → Synthesizes comparison → Done in 2 minutes
-
-> 📹 **Local video**: [assets/Screen Recording 2025-12-02 at 9.31.45 AM-silent.mov](./assets/Screen%20Recording%202025-12-02%20at%209.31.45%20AM-silent.mov)
 
 ---
 
