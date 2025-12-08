@@ -10,7 +10,7 @@
 [![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock%20AgentCore-FF9900.svg)](https://aws.amazon.com/bedrock/)
 [![Strands Agents](https://img.shields.io/badge/Strands-Agents-00D9FF.svg)](https://github.com/strands-ai)
 
-**Website**: [boothambrowser.com](https://boothambrowser.com) | **Docs**: [.kiro/docs](./.kiro/docs/)
+**Website**: [boothambrowser.com](https://boothambrowser.com) | **Docs**: [.kiro/docs](./.kiro/docs/) | [Acquire?](mailto:vivek@boothambrowser.com) [Contact](mailto:vivekraja98@gmail.com) 
 
 ---
 
@@ -509,13 +509,13 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 **Bootham Browser** - *The Agentic AI Browser*
 
-Made with 💜 and 👻 for Kiroween Hackathon 2024
+Made with 💜 and 👻 for Kiroween Hackathon 2025
 
 ---
 
 *"Bootham" (பூதம்) means "ghost" in Tamil*  
 *Your friendly browsing spirit* 👻
 
-[![Star on GitHub](https://img.shields.io/github/stars/yourusername/bootham-browser?style=social)](https://github.com/yourusername/bootham-browser)
+[![Star on GitHub](https://img.shields.io/github/stars/Vivek0712/bootham-browser?style=social)](https://github.com/Vivek0712/bootham-browser)
 
 </div>
