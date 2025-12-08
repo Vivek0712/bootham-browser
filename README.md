@@ -14,7 +14,7 @@
 
 ---
 
-### 🎃 Kiroween Hackathon 2024 - Frankenstein Category
+### 🎃 Kiroween Hackathon 2025 - Frankenstein Category
 
 <img src="https://img.shields.io/badge/🧟_Frankenstein_Score-10%2F10-ff6b6b?style=for-the-badge" alt="Frankenstein Score"/>
 <img src="https://img.shields.io/badge/👻_Spooky_Meter-EXTREMELY_HAUNTED-9b59b6?style=for-the-badge" alt="Spooky Meter"/>
