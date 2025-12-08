@@ -10,7 +10,7 @@
 [![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock%20AgentCore-FF9900.svg)](https://aws.amazon.com/bedrock/)
 [![Strands Agents](https://img.shields.io/badge/Strands-Agents-00D9FF.svg)](https://github.com/strands-ai)
 
-**Website**: [boothambrowser.com](https://boothambrowser.com) | **Docs**: [.kiro/docs](./.kiro/docs/) | [Acquire?](mailto:vivek@boothambrowser.com) [Contact](mailto:vivekraja98@gmail.com) 
+**Website**: [boothambrowser.com](https://boothambrowser.com) | **Docs**: [.kiro/docs](./.kiro/docs/) | [Acquire this Platform?](mailto:vivek@boothambrowser.com) |  [Contact Me](mailto:vivekraja98@gmail.com) 
 
 ---
 
